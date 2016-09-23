@@ -53,6 +53,7 @@ public class PointRenderer {
 			}
 		}
 		
+		////////////////////////////
 		// Not sure what you do.
 		VAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(VAO);
@@ -61,7 +62,17 @@ public class PointRenderer {
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, buffer);
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, snapshot.getPosArray(), GL15.GL_DYNAMIC_DRAW);
 		
+		///////////////////////////
+		// Upload things to program
 		program.use();
+		try {
+			int vVertex = program.getAttribute("vVertex");
+			GL20.glEnableVertexAttribArray(vVertex);
+			GL20.glVertexAttribPointer(vVertex, 3, GL_FLOAT, false, 0, 0);
+		} catch (Exception e) {
+			System.err.println(e);
+			System.exit(1);
+		}
 		try {
 			GL20.glUniformMatrix4fv(program.getUniform("mModelViewProjection"), false, mvpData);
 			GL20.glUniform3f(program.getUniform("fColor"), 1.0f, 1.0f, 1.0f);
@@ -70,10 +81,13 @@ public class PointRenderer {
 			System.exit(1);
 		}
 		
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL30.glBindVertexArray(0);
+
 		
 		glDrawArrays(GL_POINTS, 0, snapshot.part.length);//snapshot.getPosArray());
+		
+		
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL30.glBindVertexArray(0);
 		
 		GLProgram.unuse();
 		GL30.glBindVertexArray(0);
