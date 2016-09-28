@@ -61,6 +61,22 @@ public class Snapshot implements java.io.Serializable {
 		}
 		return array;
 	}
+	
+	/**
+	 * Gets an array corresponding to the velocities of all particles in the scene.
+	 * 
+	 * @return
+	 */
+	public float[] getVelArray() {
+		float[] array = new float[3*part.length];
+		for (int i = 0; i < part.length; i++) {
+			array[3*i  ] = (float) part[i].vel.x; 
+			array[3*i+1] = (float) part[i].vel.y; 
+			array[3*i+2] = (float) part[i].vel.z; 
+		}
+		return array;
+	}
+	
 
 	public static void main(String[] args) {
 		Snapshot s1 = new Snapshot(20, 0.0);

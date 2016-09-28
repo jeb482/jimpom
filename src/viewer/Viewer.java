@@ -21,21 +21,13 @@ import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.system.MemoryUtil.NULL;
-
-import javax_.vecmath.Matrix4f;
 import javax_.vecmath.Vector2f;
 
 import org.lwjgl.Version;
@@ -47,6 +39,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import render.PointRenderer;
+import sim.VelocitySimulator;
 import snapshot.Snapshot;
 import camera.Camera;
 import camera.PerspectiveCamera;
@@ -59,10 +52,11 @@ public class Viewer {
 	// The scene camera
 	private Camera camera = new PerspectiveCamera(0.01f, 100.0f);
 	private PointRenderer renderer;
+	private VelocitySimulator simulator;
 	private GLProgram program;
 	private int VAO;
-	private Snapshot lazySnapshot;
-	
+	private Snapshot currentSnapshot;
+	private long t0;
 	
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -168,11 +162,14 @@ public class Viewer {
 		// Make the window visible
 		glfwShowWindow(window);
 		
-		lazySnapshot = new Snapshot(5,1);
+		t0 = System.currentTimeMillis();
+		currentSnapshot = new Snapshot(5, 0);
 		for (int i = 0; i < 5; i++) {
-			lazySnapshot.part[i].pos.set(.5*i, .5*i, .5*i);
+			currentSnapshot.part[i].pos.set(.5*i, .5*i, .5*i);
+			currentSnapshot.part[i].vel.set(-.5*i, -.5*i, -.5*i);
 		}
 		renderer = new PointRenderer();
+		simulator = new VelocitySimulator();
 		
 	}
 
@@ -183,45 +180,8 @@ public class Viewer {
 		// Run the rendering loop until the user has attempted to close
 		// the window or has pressed the ESCAPE key.
 		while ( !glfwWindowShouldClose(window) ) {
-			renderer.render(lazySnapshot, camera, window);
-				
-			//			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-//			
-//			Matrix4f view = new Matrix4f();
-//			camera.getViewMatrix(view);
-//			
-//			Matrix4f proj = new Matrix4f();
-//			camera.getProjectionMatrix(proj);
-//			
-//			Matrix4f mvp = new Matrix4f();
-//			mvp.mul(proj, view);
-//			
-//			float[] mvpData = new float[16];
-//			for (int i=0; i<4; i++) {
-//				for (int j=0; j<4; j++) {
-//					mvpData[4*i+j] = mvp.getElement(j, i);
-//				}
-//			}
-//			
-//			GL30.glBindVertexArray(VAO);
-//			program.use();
-//			try {
-//				GL20.glUniformMatrix4fv(program.getUniform("mModelViewProjection"), false, mvpData);
-//				GL20.glUniform3f(program.getUniform("fColor"), 0.0f, 1.0f, 0.0f);
-//			} catch (Exception e) {
-//				System.err.println(e);
-//				System.exit(1);
-//			}
-//			
-//			glDrawArrays(GL_TRIANGLES, 0, 3);
-//			
-//			GLProgram.unuse();
-//			GL30.glBindVertexArray(0);
-//
-//			glfwSwapBuffers(window); // swap the color buffers
-//
-//			// Poll for window events. The key callback above will only be
-//			// invoked during this call.
+			renderer.render(currentSnapshot, camera, window);
+			currentSnapshot = simulator.simulate(currentSnapshot, (System.currentTimeMillis()-t0)/1000f);
 			glfwPollEvents();
 		}
 	}
