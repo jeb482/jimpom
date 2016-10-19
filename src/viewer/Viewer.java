@@ -68,6 +68,7 @@ public class Viewer {
 			// Free the window callbacks and destroy the window
 			glfwFreeCallbacks(window);
 			glfwDestroyWindow(window);
+
 		} finally {
 			// Terminate GLFW and free the error callback
 			glfwTerminate();

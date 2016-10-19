@@ -12,9 +12,19 @@ public class Particle implements java.io.Serializable, Cloneable {
 	
 	public final Point3d pos = new Point3d();
 	public final Vector3d vel = new Vector3d();
+	public final Vector3d momentum = new Vector3d();
+	public double mass;
 
+	
 	public Particle() {
 		// TODO
+	}
+	
+	public Particle(Point3d p, Vector3d v, double m) {
+		pos.set(p);
+		vel.set(v);
+		mass = m;
+		momentum.scale(m, v);	
 	}
 	
 	public Particle(Particle p) {
